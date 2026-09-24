@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Diabetes Risk Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F5F7F5;
+    --panel: #FFFFFF;
+    --ink: #16241F;
+    --ink-soft: #4A5A54;
+    --line: #D8DED9;
+    --teal: #275C58;
+    --teal-deep: #16342F;
+    --low: #3F7A55;
+    --low-bg: #E7F1E9;
+    --moderate: #A97327;
+    --moderate-bg: #F5EADA;
+    --high: #A2432F;
+    --high-bg: #F6E4DE;
+    --radius: 3px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-size: 15.5px;
+    line-height: 1.55;
+  }
+
+  h1, h2, h3 { font-family: 'Source Serif 4', Georgia, serif; margin: 0; }
+
+  a { color: var(--teal); }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+
+  header.hero {
+    border-bottom: 1px solid var(--line);
+    padding: 52px 0 40px;
+  }
+
+  header.hero .eyebrow {
+    color: var(--teal);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-bottom: 10px;
+  }
+
+  header.hero h1 {
+    font-size: clamp(30px, 4vw, 44px);
+    font-weight: 600;
+    color: var(--teal-deep);
+    max-width: 720px;
+    letter-spacing: -0.01em;
+  }
+
+  header.hero p {
+    max-width: 620px;
+    color: var(--ink-soft);
+    font-size: 16.5px;
+    margin-top: 14px;
+  }
+
+  main.layout {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 40px;
+    padding: 44px 0 80px;
+    align-items: start;
+  }
+
+  @media (max-width: 880px) {
+    main.layout { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  form.card { padding: 32px; }
+
+  fieldset {
+    border: none;
+    padding: 0;
+    margin: 0 0 26px;
+  }
+
+  fieldset legend {
+    font-family: 'Source Serif 4', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--teal-deep);
+    padding: 0;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+    width: 100%;
+  }
+
+  .field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 20px;
+  }
+
+  .field { display: flex; flex-direction: column; }
+
+  .field label {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .field .hint {
+    font-size: 12.2px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+
+  .field input {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 9px 10px;
+    font-size: 14.5px;
+    font-family: inherit;
+    color: var(--ink);
+    background: #FBFCFB;
+  }
+
+  .field input:focus {
+    outline: 2px solid var(--teal);
+    outline-offset: 1px;
+    border-color: var(--teal);
+  }
+
+  .field input.invalid { border-color: var(--high); }
+
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+
+  button {
+    font-family: inherit;
+    font-size: 14.5px;
+    cursor: pointer;
+  }
+
+  .btn-primary {
+    background: var(--teal-deep);
+    color: #F5F7F5;
+    border: none;
+    border-radius: var(--radius);
+    padding: 12px 22px;
+    font-weight: 600;
+  }
+  .btn-primary:hover { background: var(--teal); }
+  .btn-primary:disabled { background: #9AA9A4; cursor: not-allowed; }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    border-radius: var(--radius);
+    padding: 12px 18px;
+  }
+  .btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+
+  .error-banner {
+    background: var(--high-bg);
+    color: var(--high);
+    border: 1px solid var(--high);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 13.5px;
+    margin-top: 14px;
+    display: none;
+  }
+
+  /* --- Results panel --- */
+  .results { position: sticky; top: 28px; display: flex; flex-direction: column; gap: 18px; }
+
+  .result-card { padding: 30px 30px 26px; }
+
+  .result-card h2 { font-size: 18px; color: var(--teal-deep); margin-bottom: 4px; }
+  .result-card .sub { color: var(--ink-soft); font-size: 13.5px; margin-bottom: 18px; }
+
+  .gauge-row { display: flex; align-items: center; gap: 22px; }
+
+  .gauge-num {
+    font-family: 'Source Serif 4', serif;
+    font-size: 46px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .gauge-num sup { font-size: 20px; font-weight: 600; }
+
+  .pill {
+    display: inline-block;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-top: 6px;
+  }
+  .pill.low { background: var(--low-bg); color: var(--low); }
+  .pill.moderate { background: var(--moderate-bg); color: var(--moderate); }
+  .pill.high { background: var(--high-bg); color: var(--high); }
+
+  .summary-text {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 14.5px;
+  }
+
+  .explain-card { padding: 26px 30px 10px; }
+  .explain-card h3 {
+    font-size: 15px;
+    color: var(--teal-deep);
+    margin-bottom: 4px;
+  }
+  .explain-card .sub { color: var(--ink-soft); font-size: 13px; margin-bottom: 18px; }
+
+  .factor { padding: 12px 0; border-top: 1px solid var(--line); }
+  .factor:first-of-type { border-top: none; }
+
+  .factor-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .factor-name { font-size: 14px; font-weight: 500; }
+  .factor-value { font-size: 12.5px; color: var(--ink-soft); white-space: nowrap; }
+
+  .bar-track {
+    height: 6px;
+    background: #EDEFEC;
+    border-radius: 4px;
+    margin-top: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+  }
+  .bar-fill.up { background: var(--high); }
+  .bar-fill.down { background: var(--low); }
+
+  .factor-direction { font-size: 11.5px; color: var(--ink-soft); margin-top: 4px; }
+
+  .disclaimer {
+    font-size: 12px;
+    color: var(--ink-soft);
+    padding: 14px 30px 22px;
+    border-top: 1px solid var(--line);
+  }
+
+  .placeholder {
+    padding: 60px 30px;
+    text-align: center;
+    color: var(--ink-soft);
+  }
+  .placeholder h2 { color: var(--teal-deep); font-size: 18px; margin-bottom: 8px; }
+  .placeholder p { font-size: 13.5px; max-width: 320px; margin: 0 auto; }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 26px 0 40px;
+    color: var(--ink-soft);
+    font-size: 12.5px;
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Early risk awareness</div>
+    <h1>See your estimated diabetes risk, and exactly what's driving it.</h1>
+    <p>Enter a few common health measurements below. A statistical model trained on clinical risk patterns
+       estimates your risk, then shows you which factors moved that number and by how much — so you leave
+       with an answer you can actually understand, not just a score.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <main class="layout">
+
+    <form class="card" id="risk-form">
+      <fieldset>
+        <legend>Personal details</legend>
+        <div class="field-grid">
+          <div class="field">
+            <label for="age">Age</label>
+            <span class="hint">Years</span>
+            <input type="number" id="age" name="age" min="1" max="120" value="45" required>
+          </div>
+          <div class="field">
+            <label for="pregnancies">Pregnancies</label>
+            <span class="hint">Total number, lifetime</span>
+            <input type="number" id="pregnancies" name="pregnancies" min="0" max="20" value="2" required>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Body measurements</legend>
+        <div class="field-grid">
+          <div class="field">
+            <label for="bmi">Body mass index (BMI)</label>
+            <span class="hint">kg/m² &middot; typical range 18&ndash;40</span>
+            <input type="number" step="0.1" id="bmi" name="bmi" min="10" max="70" value="29" required>
+          </div>
+          <div class="field">
+            <label for="skin_thickness">Triceps skinfold thickness</label>
+            <span class="hint">mm &middot; from a caliper measurement</span>
+            <input type="number" step="0.1" id="skin_thickness" name="skin_thickness" min="0" max="100" value="24" required>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Blood work</legend>
+        <div class="field-grid">
+          <div class="field">
+            <label for="glucose">Fasting glucose</label>
+            <span class="hint">mg/dL &middot; from a fasting blood test</span>
+            <input type="number" step="0.1" id="glucose" name="glucose" min="40" max="300" value="120" required>
+          </div>
+          <div class="field">
+            <label for="insulin">Serum insulin</label>
+            <span class="hint">mu U/mL &middot; 2-hour test value</span>
+            <input type="number" step="0.1" id="insulin" name="insulin" min="0" max="900" value="90" required>
+          </div>
+          <div class="field">
+            <label for="blood_pressure">Blood pressure</label>
+            <span class="hint">mm Hg &middot; diastolic reading</span>
+            <input type="number" step="0.1" id="blood_pressure" name="blood_pressure" min="30" max="180" value="74" required>
+          </div>
+          <div class="field">
+            <label for="diabetes_pedigree">Family history score</label>
+            <span class="hint">0 (none) &ndash; 2.5 (strong history)</span>
+            <input type="number" step="0.01" id="diabetes_pedigree" name="diabetes_pedigree" min="0" max="3" value="0.45" required>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" id="submit-btn">Check my risk</button>
+        <button type="button" class="btn-ghost" id="sample-btn">Fill sample values</button>
+      </div>
+      <div class="error-banner" id="error-banner"></div>
+    </form>
+
+    <div class="results">
+      <div class="card placeholder" id="placeholder">
+        <h2>Your results will appear here</h2>
+        <p>Fill in the form and select "Check my risk" to see your estimate and its explanation.</p>
+      </div>
+
+      <div class="card result-card hidden" id="result-card">
+        <h2>Estimated risk</h2>
+        <div class="sub">Based on the values you entered</div>
+        <div class="gauge-row">
+          <svg id="gauge" width="120" height="72" viewBox="0 0 120 72"></svg>
+          <div>
+            <div class="gauge-num" id="risk-number">0<sup>%</sup></div>
+            <span class="pill" id="risk-pill">Lower risk</span>
+          </div>
+        </div>
+        <div class="summary-text" id="summary-text"></div>
+      </div>
+
+      <div class="card explain-card hidden" id="explain-card">
+        <h3>What's driving this estimate</h3>
+        <div class="sub">Ranked by how much each value moved your risk, up or down</div>
+        <div id="factor-list"></div>
+      </div>
+
+      <div class="card disclaimer hidden" id="disclaimer-box"></div>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  <div class="wrap">
+    Educational tool only &mdash; not a substitute for professional medical advice. Model trained on synthetic
+    data for demonstration purposes.
+  </div>
+</footer>
+
+<script>
+  // Point this at wherever backend/app.py is running.
+  const API_BASE = "http://127.0.0.1:5000";
+
+  const form = document.getElementById("risk-form");
+  const submitBtn = document.getElementById("submit-btn");
+  const sampleBtn = document.getElementById("sample-btn");
+  const errorBanner = document.getElementById("error-banner");
+  const placeholder = document.getElementById("placeholder");
+  const resultCard = document.getElementById("result-card");
+  const explainCard = document.getElementById("explain-card");
+  const disclaimerBox = document.getElementById("disclaimer-box");
+
+  const SAMPLE = {
+    age: 52, pregnancies: 3, bmi: 33.6, skin_thickness: 32,
+    glucose: 158, insulin: 210, blood_pressure: 88, diabetes_pedigree: 0.72,
+  };
+
+  sampleBtn.addEventListener("click", () => {
+    Object.entries(SAMPLE).forEach(([key, val]) => {
+      const el = form.elements[key];
+      if (el) el.value = val;
+    });
+  });
+
+  function showError(msg) {
+    errorBanner.textContent = msg;
+    errorBanner.style.display = "block";
+  }
+  function clearError() {
+    errorBanner.style.display = "none";
+  }
+
+  function drawGauge(pct, color) {
+    const svg = document.getElementById("gauge");
+    const cx = 60, cy = 62, r = 50;
+    const startAngle = Math.PI, endAngle = 0; // semicircle, left to right
+    const clamped = Math.max(0, Math.min(100, pct));
+    const angle = startAngle - (startAngle - endAngle) * (clamped / 100);
+
+    function pt(a) { return [cx + r * Math.cos(a), cy - r * Math.sin(a)]; }
+    const [x1, y1] = pt(startAngle);
+    const [x2, y2] = pt(endAngle);
+    const [nx, ny] = pt(angle);
+
+    const track = `M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}`;
+    const large = (startAngle - angle) > Math.PI ? 1 : 0;
+    const fill = `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${nx} ${ny}`;
+
+    svg.innerHTML = `
+      <path d="${track}" fill="none" stroke="#EDEFEC" stroke-width="10" stroke-linecap="round"/>
+      <path d="${fill}" fill="none" stroke="${color}" stroke-width="10" stroke-linecap="round"/>
+      <circle cx="${cx}" cy="${cy}" r="3.5" fill="${color}"/>
+    `;
+  }
+
+  const CATEGORY_COLOR = { low: "#3F7A55", moderate: "#A97327", high: "#A2432F" };
+
+  function renderFactor(c) {
+    const isUp = c.direction === "increases";
+    const barWidth = { high: 92, medium: 60, low: 30 }[c.impact] || 20;
+    const unit = c.unit ? ` ${c.unit}` : "";
+    return `
+      <div class="factor">
+        <div class="factor-top">
+          <span class="factor-name">${c.label}</span>
+          <span class="factor-value">${c.value}${unit}</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill ${isUp ? 'up' : 'down'}" style="width:${barWidth}%"></div>
+        </div>
+        <div class="factor-direction">${isUp ? "Increases" : "Decreases"} estimated risk &middot; ${c.impact} impact</div>
+      </div>
+    `;
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    clearError();
+
+    const payload = {};
+    for (const el of form.elements) {
+      if (el.name) payload[el.name] = el.value;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Checking...";
+
+    try {
+      const res = await fetch(`${API_BASE}/api/predict`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showError(data.error || "Something went wrong. Please check your inputs.");
+        return;
+      }
+
+      const color = CATEGORY_COLOR[data.risk_category.level];
+      drawGauge(data.risk_percent, color);
+      document.getElementById("risk-number").innerHTML = `${data.risk_percent}<sup>%</sup>`;
+      const pill = document.getElementById("risk-pill");
+      pill.textContent = data.risk_category.label;
+      pill.className = `pill ${data.risk_category.level}`;
+      document.getElementById("summary-text").textContent = data.summary;
+
+      document.getElementById("factor-list").innerHTML =
+        data.contributions.map(renderFactor).join("");
+
+      disclaimerBox.textContent = data.disclaimer;
+
+      placeholder.classList.add("hidden");
+      resultCard.classList.remove("hidden");
+      explainCard.classList.remove("hidden");
+      disclaimerBox.classList.remove("hidden");
+    } catch (err) {
+      showError("Could not reach the risk model. Is the backend running at " + API_BASE + "?");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Check my risk";
+    }
+  });
+</script>
+
+</body>
+</html>
