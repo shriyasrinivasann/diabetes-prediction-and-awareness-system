@@ -108,8 +108,57 @@ def make_dataset(n_samples: int = 6000, seed: int = 42):
     return X, outcome
 
 
+import csv
+
+def load_csv_dataset(csv_path: Path):
+    """Load and preprocess the dataset from diabetes.csv."""
+    if not csv_path.exists():
+        return None, None
+
+    rows = []
+    headers = None
+    with open(csv_path, mode="r", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        for i, row in enumerate(reader):
+            if i == 0 and any(c.isalpha() for c in row[0]):
+                headers = [c.strip().lower() for c in row]
+                continue
+            if not row:
+                continue
+            try:
+                vals = [float(v.strip()) for v in row]
+                rows.append(vals)
+            except ValueError:
+                continue
+
+    if not rows:
+        return None, None
+
+    data = np.array(rows)
+    X = data[:, :-1]
+    y = data[:, -1].astype(int)
+
+    # Clean zero values for physiological features where 0 is physiologically invalid
+    # Columns: 1: Glucose, 2: BloodPressure, 3: SkinThickness, 4: Insulin, 5: BMI
+    zero_columns = [1, 2, 3, 5]
+    for col in zero_columns:
+        valid_mask = X[:, col] > 0
+        if np.any(valid_mask):
+            median_val = np.median(X[valid_mask, col])
+            X[~valid_mask, col] = median_val
+
+    return X, y
+
+
 def main():
-    X, y = make_dataset()
+    csv_file = Path(__file__).parent / "diabetes.csv"
+    X, y = load_csv_dataset(csv_file)
+    if X is not None and y is not None:
+        print(f"Loaded dataset from {csv_file.name} ({len(X)} samples)")
+    else:
+        print("Using synthetic dataset...")
+        X, y = make_dataset()
+
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
@@ -141,3 +190,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -16,12 +16,21 @@ from pathlib import Path
 
 import joblib
 import numpy as np
-from flask import Flask, jsonify, request
-
+from flask import Flask, jsonify, request, send_from_directory
 import train_model
 from train_model import FEATURES, FEATURE_META, MODEL_DIR
 
-app = Flask(__name__)
+FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
+
+app = Flask(__name__, static_folder=str(FRONTEND_DIR), static_url_path="")
+
+
+
+
+@app.route("/")
+def index():
+    return send_from_directory(FRONTEND_DIR, "index.html")
+
 
 
 @app.after_request

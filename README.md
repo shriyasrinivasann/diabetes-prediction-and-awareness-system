@@ -27,10 +27,7 @@ breakdown of how much each input contributed to a specific prediction, which
 is what makes honest, faithful explanations possible instead of approximated
 after-the-fact guesses.
 
-The demo trains on a synthetically generated cohort (see the docstring in
-`train_model.py`) so the project runs immediately with no dataset download.
-Swap in a real clinical CSV via `pandas.read_csv(...)` in `make_dataset()` if
-you have one — nothing else in the pipeline needs to change.
+The project trains on the included `backend/diabetes.csv` dataset (Pima Indians Diabetes cohort with 768 clinical samples). If `diabetes.csv` is absent, it seamlessly falls back to synthetic dataset generation in `train_model.py`.
 
 **Explanation.** For a logistic model, `logit(p) = intercept + Σ(coefficient_i × scaled_value_i)`.
 The API computes each `coefficient_i × scaled_value_i` term directly from the
@@ -52,19 +49,18 @@ summary, and a ranked bar-chart-style breakdown of contributing factors.
 ## Running it
 
 ```bash
-# 1. Backend
+# 1. Install dependencies
 cd backend
 pip install -r requirements.txt
-python3 app.py
-# First run trains the model automatically (a few seconds) and prints
-# accuracy/ROC-AUC, then serves the API on http://127.0.0.1:5000
 
-# 2. Frontend
-# Just open frontend/index.html in a browser (or serve it with any static
-# file server). It calls http://127.0.0.1:5000 by default — change the
-# API_BASE constant near the bottom of index.html if you run the backend
-# elsewhere.
+# 2. Train model (optional: app.py runs this automatically if model is not trained)
+python train_model.py
+
+# 3. Start Application Server
+python app.py
+# Serves both the Flask API and the Frontend interface at http://127.0.0.1:5000
 ```
+
 
 ## Notes on the model's honesty
 
